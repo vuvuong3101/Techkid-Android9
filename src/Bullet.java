@@ -1,12 +1,10 @@
 import java.awt.*;
 
-/**
- * Created by admin on 4/12/17.
- */
 public class Bullet {
-    private   int x;
-    private   int y;
+    private int x;
+    private int y;
     private Image image;
+
     public Bullet(int x, int y, Image image){
         this.x = x - image.getWidth(null) /2;
         this.y = y - image.getHeight(null);
@@ -28,7 +26,6 @@ public class Bullet {
         graphics.drawImage(this.image, this.x, this.y, null);
     }
     public  void update(){
-
         this.y -= 12;
     }
- }
+}

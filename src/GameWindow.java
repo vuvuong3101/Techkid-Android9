@@ -7,54 +7,40 @@ import java.awt.event.WindowListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
+
 
 /**
- * Created by admin on 4/11/17.
+ * Created by admin on 4/13/17.
  */
-public class GameWindow  extends Frame{
+public class GameWindow extends Frame{
     Image backgroundImage;
 
-
-
-//    private int planeW = 70;
-//    private int planeH = 60;
     private int screenW = 600;
     private int screenH = 700;
-
-//    private int planeX = screenW/2 - planeW/2;
-//    private int planeY = screenH - planeH;
-
-
     boolean isUpPressed;
     boolean isDownPressed;
     boolean isLeftPressed;
     boolean isRightPressed;
-    boolean isSpacepressed;
+    boolean isSpacePressed;
 
-    // bullet
-    ArrayList<Bullet> bullets;
-    Player plane ;
+    Player player;
+    Enemy enemy;
+    Image loadImage(String path) {
+        try {
+            return ImageIO.read(new File(path));
 
-
-    //
-    BufferedImage backBufferImage;
-    Graphics backBufferGraphics;
-
-
-    // create Game Window
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+    BufferedImage backbufferedImage;
+    Graphics backBufferedGapphics;
 
     public GameWindow() {
-
+        // Set Game Window
         setVisible(true);
         setSize(screenW, screenH);
-        backBufferImage = new BufferedImage(screenW, screenH, BufferedImage.TYPE_INT_ARGB);
-        backBufferGraphics = backBufferImage.getGraphics();
-
-        plane.setBullets(bullets);
-
-        plane = new Player(370, 530,loadImage("res/plane3.png") );
-        // listener
         addWindowListener(new WindowListener() {
             @Override
             public void windowOpened(WindowEvent e) {
@@ -64,6 +50,7 @@ public class GameWindow  extends Frame{
             @Override
             public void windowClosing(WindowEvent e) {
                 System.exit(0);
+
             }
 
             @Override
@@ -107,13 +94,9 @@ public class GameWindow  extends Frame{
                     isUpPressed = true;
                 }else if (e.getKeyCode() == KeyEvent.VK_DOWN) {
                     isDownPressed = true;
+                }if(e.getKeyCode() == KeyEvent.VK_SPACE) {
+                    isSpacePressed = true;
                 }
-                if (e.getKeyCode() == KeyEvent.VK_SPACE) {
-                    isSpacepressed = true;
-                }
-
-
-
 
             }
 
@@ -127,17 +110,22 @@ public class GameWindow  extends Frame{
                     isUpPressed = false;
                 }else if (e.getKeyCode() == KeyEvent.VK_DOWN) {
                     isDownPressed = false;
+                }if(e.getKeyCode() == KeyEvent.VK_SPACE) {
+                    isSpacePressed = false;
                 }
-                if (e.getKeyCode() == KeyEvent.VK_SPACE) {
-                    isSpacepressed = false;
-                }
+
             }
         });
+        backbufferedImage = new BufferedImage(screenW, screenH, BufferedImage.TYPE_INT_ARGB);
+        backBufferedGapphics = backbufferedImage.getGraphics();
+
+        player = new Player(370, 530, loadImage("res/plane2.png") );
+        enemy = new Enemy(370, 30, loadImage("res/enemy_plane_white_3.png"));
 
         // load image
         backgroundImage = loadImage("res/background.png");
 
-        // GAme loop
+        // Game loop
         Thread thread = new Thread(new Runnable() {
             @Override
             public void run() {
@@ -148,44 +136,33 @@ public class GameWindow  extends Frame{
                         e.printStackTrace();
                     }
 
-                    //logic
-                    plane.processInput(isUpPressed, isDownPressed, isLeftPressed, isRightPressed,isSpacepressed);
-
-//                    if (isSpacepressed) {
-//                        Bullet bullet = new Bullet(plane.getX() + plane.getW()/2, plane.getY(), loadImage("res/bullet.png"));
-//                        bullets.add(bullet);
-//                    }
-                    for (Bullet bullet : bullets) {
-                        bullet.update();
-                    }
-
-
-                    plane.update();
+                    //// LOGIC
+                    player.updateBullet();
+                    enemy.automove();
+                    enemy.autoshoot();
+                    // update vi tri player
+                    player.processInput(isUpPressed, isDownPressed, isLeftPressed, isRightPressed, isSpacePressed);
+                    enemy.updateEbullet();
+                    player.update();
                     repaint();
                 }
             }
         });
+
+        // repaint
         thread.start();
     }
-     Image loadImage(String path) {
-         try {
-             return ImageIO.read(new File(path));
 
-         } catch (IOException e) {
-             e.printStackTrace();
-         }
-         return null;
-     }
     @Override
     public void update(Graphics g) {
-        // draw on backbuffer
-        backBufferGraphics.drawImage(backgroundImage,0 , 0,screenW , screenH,null);
-        plane.draw(backBufferGraphics);
-        for (Bullet bullet : bullets) {
-            bullet.draw(backBufferGraphics);
-        }
+        backBufferedGapphics.drawImage(backgroundImage, 0, 0 , screenW, screenH, null);
+        player.draw(backBufferedGapphics);
+        player.drawBullet(backBufferedGapphics);
+        enemy.draw(backBufferedGapphics);
+        enemy.draw_Ebullet(backBufferedGapphics);
 
-        // draw on Game window
-        g.drawImage(backBufferImage, 0 , 0, null);
+
+        g.drawImage(backbufferedImage, 0, 0, null);
+
     }
 }
